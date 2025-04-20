@@ -24,12 +24,6 @@ cost_per_ml_egp = st.sidebar.number_input("Estimated Cost per ml (EGP)", value=1
 cost_per_ml_sar = round(cost_per_ml_egp * exchange_rate, 3)
 st.sidebar.markdown(f"**Converted Cost per ml (SAR):** {cost_per_ml_sar:.3f}")
 
-# Optional fixed cost per ml for reference
-st.sidebar.markdown("---")
-st.sidebar.markdown("📌 **Fixed Cost per ml (SAR)**")
-st.sidebar.markdown("- 50ml size → 0.015")
-st.sidebar.markdown("- 75ml size → 0.015")
-st.sidebar.markdown("- 100ml size → 0.015")
 
 # Pricing and size inputs
 distributor_margin_pct = st.sidebar.slider("Distributor Margin %", 5, 40, 25, step=1)
