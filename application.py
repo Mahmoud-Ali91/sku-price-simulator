@@ -172,7 +172,6 @@ if remaining > 0:
  break_even_units = round(investment_cap_egp / (remaining * exchange_rate), 0)
 else:
  break_even_units = float('inf')  # not feasible
-
     results.append({
             "Target Price (SAR)": price,
             "Fixed Size (ml)": size,
