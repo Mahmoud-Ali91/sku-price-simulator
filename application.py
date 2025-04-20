@@ -173,7 +173,7 @@ if remaining > 0:
 else:
  break_even_units = float('inf')  # not feasible
 
-        results.append({
+    results.append({
             "Target Price (SAR)": price,
             "Fixed Size (ml)": size,
             "Dynamic Cost per ml (EGP)": round(dynamic_cost_egp, 2),
