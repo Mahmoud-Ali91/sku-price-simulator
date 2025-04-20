@@ -120,6 +120,30 @@ if not profitable.empty:
 else:
     st.warning("⚠️ No SKU fits margin or investment constraints. Try adjusting inputs.")
 ...
+ # Break-even point: how many units needed to recover investment at this profit/unit
+        if remaining > 0:
+            break_even_units = round(investment_cap_egp / (remaining * exchange_rate), 0)
+        else:
+            break_even_units = float('inf')  # not feasible
+
+        results.append({
+            "Target Price (SAR)": price,
+            "Fixed Size (ml)": size,
+            "Dynamic Cost per ml (EGP)": round(dynamic_cost_egp, 2),
+            "Exchange Rate": exchange_rate,
+            "Cost per ml (SAR)": round(dynamic_cost_sar, 3),
+            "Factory Cost": factory_cost,
+            "Distributor Margin": distributor_margin,
+            "Retail Margin": retail_margin,
+            "Total Chain Cost": total_chain_cost,
+            "Remaining Margin": remaining,
+            f"Total Units Needed to Hit {revenue_goal} SAR Revenue": units_needed,
+            "Profit per Unit (SAR)": remaining,
+            f"Total Profit at {revenue_goal} SAR Revenue": total_profit,
+            "Total Investment (EGP)": total_investment_egp,
+            "Break-even Units (based on Investment Cap)": break_even_units,
+            "Recommendation": recommendation
+        })
 
 # --- Visualization Section ---
 
