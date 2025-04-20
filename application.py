@@ -11,8 +11,10 @@ st.markdown("""
 Use this tool to simulate the profitability of fixed toothpaste sizes based on:
 - Cost per ml in EGP
 - Exchange rate to SAR
+- Converted cost per ml (SAR) for specific packaging
 - Target retail price in the Saudi market
 - Distributor and retailer margin assumptions
+- Investment constraints in EGP
 """)
 
 # --- User Inputs Section ---
@@ -22,6 +24,14 @@ cost_per_ml_egp = st.sidebar.number_input("Estimated Cost per ml (EGP)", value=1
 cost_per_ml_sar = round(cost_per_ml_egp * exchange_rate, 3)
 st.sidebar.markdown(f"**Converted Cost per ml (SAR):** {cost_per_ml_sar:.3f}")
 
+# Optional fixed cost per ml for reference
+st.sidebar.markdown("---")
+st.sidebar.markdown("📌 **Fixed Cost per ml (SAR)**")
+st.sidebar.markdown("- 50ml size → 0.015")
+st.sidebar.markdown("- 75ml size → 0.015")
+st.sidebar.markdown("- 100ml size → 0.015")
+
+# Pricing and size inputs
 distributor_margin_pct = st.sidebar.slider("Distributor Margin %", 5, 40, 25, step=1)
 retail_margin_pct = st.sidebar.slider("Retail Margin %", 5, 30, 15, step=1)
 target_prices = st.sidebar.multiselect(
@@ -37,6 +47,7 @@ sizes_ml = st.sidebar.multiselect(
 )
 
 revenue_goal = st.sidebar.number_input("Target Revenue Goal (SAR)", value=10000, step=500)
+investment_cap_egp = st.sidebar.number_input("Maximum Investment (EGP)", value=250000, step=10000)
 
 # --- Calculation Section ---
 results = []
@@ -48,8 +59,14 @@ for size in sizes_ml:
         total_chain_cost = factory_cost + distributor_margin + retail_margin
         remaining = round(price - total_chain_cost, 2)
 
+        units_needed = round(revenue_goal / price)
+        total_profit = round(units_needed * remaining, 2)
+        total_investment_egp = round(units_needed * size * cost_per_ml_egp, 2)
+
         # Dynamic recommendation
-        if remaining >= 0.3 and remaining <= 0.8:
+        if total_investment_egp > investment_cap_egp:
+            recommendation = "❌ Exceeds Investment Cap"
+        elif remaining >= 0.3 and remaining <= 0.8:
             recommendation = "✅ Profitable SKU"
         elif remaining > 0.8:
             recommendation = "✅ High Margin – Consider Lower Price or Bigger Size"
@@ -57,9 +74,6 @@ for size in sizes_ml:
             recommendation = "⚠️ Low Margin – Recheck Costs or Margins"
         else:
             recommendation = "❌ Not Profitable"
-
-        units_needed = round(revenue_goal / price)
-        total_profit = round(units_needed * remaining, 2)
 
         results.append({
             "Target Price (SAR)": price,
@@ -75,6 +89,7 @@ for size in sizes_ml:
             f"Total Units Needed to Hit {revenue_goal} SAR Revenue": units_needed,
             "Profit per Unit (SAR)": remaining,
             f"Total Profit at {revenue_goal} SAR Revenue": total_profit,
+            "Total Investment (EGP)": total_investment_egp,
             "Recommendation": recommendation
         })
 
@@ -97,7 +112,8 @@ format_dict = {
     "Remaining Margin": "{:.2f}",
     f"Total Units Needed to Hit {revenue_goal} SAR Revenue": "{:.0f}",
     "Profit per Unit (SAR)": "{:.2f}",
-    f"Total Profit at {revenue_goal} SAR Revenue": "{:.2f}"
+    f"Total Profit at {revenue_goal} SAR Revenue": "{:.2f}",
+    "Total Investment (EGP)": "{:.0f}"
 }
 
 st.dataframe(results_df.style.format(format_dict), use_container_width=True)
@@ -108,18 +124,12 @@ if not profitable.empty:
     st.success("✅ Recommended SKUs with feasible margin and price")
     st.dataframe(profitable[["Target Price (SAR)", "Fixed Size (ml)", "Recommendation"]])
 else:
-    st.warning("⚠️ No SKU fits margin targets safely. Try adjusting EGP cost or margin assumptions.")
+    st.warning("⚠️ No SKU fits margin or investment constraints. Try adjusting inputs.")
+...
 
-# Optional Export Button
-csv_export = results_df.to_csv(index=False).encode('utf-8')
-st.download_button(
-    label="📥 Download Simulation Results as CSV",
-    data=csv_export,
-    file_name='sku_simulation_fixed_size_results.csv',
-    mime='text/csv'
-)
+# --- Visualization Section ---
 
-# Visual Summary: Remaining Margin
+# Visual 1: Remaining Margin per Size & Price
 fig1 = px.bar(
     results_df,
     x="Fixed Size (ml)",
@@ -130,35 +140,36 @@ fig1 = px.bar(
 )
 st.plotly_chart(fig1, use_container_width=True)
 
-# Visual Summary: Profit Distribution
+# Visual 2: Profit per Unit Distribution
 fig2 = px.scatter(
     results_df,
     x="Target Price (SAR)",
     y="Profit per Unit (SAR)",
-    size="Fixed Size (ml)",
     color="Recommendation",
-    title="Profit per Unit vs Price",
-    hover_data=["Fixed Size (ml)", "Remaining Margin"]
+    size="Fixed Size (ml)",
+    title="Profit per Unit vs Retail Price",
+    hover_data=["Fixed Size (ml)", "Total Investment (EGP)"]
 )
 st.plotly_chart(fig2, use_container_width=True)
 
-# Visual Summary: Total Units Needed
-fig3 = px.line(
+# Visual 3: Total Investment per SKU
+fig3 = px.bar(
     results_df,
     x="Fixed Size (ml)",
-    y=f"Total Units Needed to Hit {revenue_goal} SAR Revenue",
+    y="Total Investment (EGP)",
     color="Target Price (SAR)",
-    title=f"Units Needed to Reach {revenue_goal} SAR Revenue Goal"
+    barmode="group",
+    title="Total Investment in EGP per SKU Option"
 )
 st.plotly_chart(fig3, use_container_width=True)
 
-# Visual Summary: Total Profit
-fig4 = px.bar(
+# Visual 4: Total Profit vs Investment Cap
+fig4 = px.scatter(
     results_df,
-    x="Fixed Size (ml)",
+    x="Total Investment (EGP)",
     y=f"Total Profit at {revenue_goal} SAR Revenue",
-    color="Target Price (SAR)",
-    barmode="group",
-    title=f"Total Profit at {revenue_goal} SAR Revenue by Size"
+    color="Recommendation",
+    symbol="Fixed Size (ml)",
+    title=f"Total Profit vs Investment (Cap = {investment_cap_egp} EGP)"
 )
 st.plotly_chart(fig4, use_container_width=True)
