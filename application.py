@@ -169,9 +169,9 @@ fig4 = px.scatter(
 st.plotly_chart(fig4, use_container_width=True)
 # Break-even point: how many units needed to recover investment at this profit/unit
 if remaining > 0:
-            break_even_units = round(investment_cap_egp / (remaining * exchange_rate), 0)
-    else:
-            break_even_units = float('inf')  # not feasible
+ break_even_units = round(investment_cap_egp / (remaining * exchange_rate), 0)
+else:
+ break_even_units = float('inf')  # not feasible
 
         results.append({
             "Target Price (SAR)": price,
