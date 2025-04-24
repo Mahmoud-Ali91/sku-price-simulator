@@ -257,42 +257,51 @@ subset_for_waterfall = subset_for_waterfall.sort_values(by=["Cost Scenario", "Fi
 fig5 = go.Figure()
 
 for i, row in subset_for_waterfall.iterrows():
-    label = f"{row['Cost Scenario']} - {row['Fixed Size (ml)']}ml - {row['Target Price (SAR)]} SAR"
+    # Create label for this configuration
+    cost_scenario = row["Cost Scenario"]
+    size_ml = row["Fixed Size (ml)"]
+    price_sar = row["Target Price (SAR)"]
+    label = f"{cost_scenario} - {size_ml}ml - {price_sar} SAR"
     
+    # Add factory cost bar
     fig5.add_trace(go.Bar(
         name=label,
-        y=['Cost Structure'],
-        x=[row['Factory Cost']],
-        orientation='h',
+        y=["Cost Structure"],
+        x=[row["Factory Cost"]],
+        orientation="h",
         text="Factory",
-        marker=dict(color='lightblue')
+        marker=dict(color="lightblue")
     ))
     
+    # Add distributor margin bar
     fig5.add_trace(go.Bar(
         name=label,
-        y=['Cost Structure'],
-        x=[row['Distributor Margin']],
-        orientation='h',
+        y=["Cost Structure"],
+        x=[row["Distributor Margin"]],
+        orientation="h",
         text="Distributor",
-        marker=dict(color='lightgreen')
+        marker=dict(color="lightgreen")
     ))
     
+    # Add retail margin bar
     fig5.add_trace(go.Bar(
         name=label,
-        y=['Cost Structure'],
-        x=[row['Retail Margin']],
-        orientation='h',
+        y=["Cost Structure"],
+        x=[row["Retail Margin"]],
+        orientation="h",
         text="Retail",
-        marker=dict(color='lightyellow')
+        marker=dict(color="lightyellow")
     ))
     
+    # Add remaining margin bar
+    remaining_color = "lightpink" if row["Remaining Margin"] > 0 else "red"
     fig5.add_trace(go.Bar(
         name=label,
-        y=['Cost Structure'],
-        x=[row['Remaining Margin']],
-        orientation='h',
+        y=["Cost Structure"],
+        x=[row["Remaining Margin"]],
+        orientation="h",
         text="Remaining",
-        marker=dict(color='lightpink' if row['Remaining Margin'] > 0 else 'red')
+        marker=dict(color=remaining_color)
     ))
 
 fig5.update_layout(
