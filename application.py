@@ -105,7 +105,7 @@ retail_margin_pct = st.sidebar.slider("Retail Margin %", 5, 30, 15, step=1)
 
 # Generate price options based on costs
 min_price = min(sizes_costs_sar.values()) * 1.5  # Minimum viable price
-max_price = max(sizes_costs_sar.values()) * 2.5  # Maximum reasonable price
+max_price = max(sizes_costs_sar.values()) * 6  # Maximum reasonable price
 price_range = [round(p, 1) for p in [*range(int(min_price*10), int(max_price*10)+1, 5)]]
 price_range = [p/10 for p in price_range]  # Convert back to float
 
